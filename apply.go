@@ -1,4 +1,4 @@
-package dragontoothmg
+ package dragontoothmg
 
 // Applies a move to the board, and returns a function that can be used to unapply it.
 // This function assumes that the given move is valid (i.e., is in the set of moves found by GenerateLegalMoves()).
@@ -237,6 +237,24 @@ func (b *Board) Apply(m Move) func() {
 		}
 	}
 	return unapply
+}
+
+// Applies a null move to the board, and returns a function that can be used to unapply it.
+func (b *Board) ApplyNullMove() func() {
+	oldHash := b.hash
+	oldEP := b.enpassant
+
+	b.hash ^= whiteToMoveZobristC
+	b.Wtomove = !b.Wtomove
+
+	b.hash ^= uint64(b.enpassant)
+	b.enpassant = 0
+
+	return func() {
+		b.Wtomove = !b.Wtomove
+		b.hash = oldHash
+		b.enpassant = oldEP
+	}
 }
 
 func determinePieceType(ourBitboardPtr *Bitboards, squareMask uint64) (Piece, *uint64) {
